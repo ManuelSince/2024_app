@@ -143,4 +143,12 @@ export const reservations = [
     status: Status.Confirmed,
     optionnal_services: [],
   },
+  {
+    date: "2024-09-18",
+    start_time: "8:00",
+    end_time: "17:30",
+    service_id: "3458",
+    status: Status.Reserved,
+    optionnal_services: [],
+  },
 ];

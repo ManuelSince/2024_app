@@ -5,6 +5,7 @@ import { getServerAuthSession } from "~/server/auth";
 import { api } from "~/trpc/server";
 import { Favorites } from "~/app/_components/favorites";
 import { getTicksfromMinutes } from "~/utils/timelineCalculus";
+import { Container } from "./_components/wrapper/Container";
 
 export default async function Home() {
   const hello = await api.post.hello({ text: "from tRPC" });
@@ -13,8 +14,19 @@ export default async function Home() {
   return (
     <>
       <h1 className="text-5xl font-extrabold tracking-tight sm:text-[5rem]">
-        Home <span className="m-5 text-[hsl(280,100%,70%)]">page</span>
+        Home <span className="m-5 text-secondary">page</span>
       </h1>
+      <Container>
+        <div>
+          <h1 className="mb-4 text-center text-3xl font-bold">Container</h1>
+          <div className="flex flex-col items-center gap-2 font-medium">
+            <p>lorem ipsum jekjk kekjekjekpzko kokxlkocknd</p>
+            <div>
+              <h1>jej ldl ldlkl ddd</h1>
+            </div>
+          </div>
+        </div>
+      </Container>
       <Favorites />
 
       <div className="flex flex-col items-center gap-2">

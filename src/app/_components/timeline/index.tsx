@@ -1,8 +1,9 @@
 "use client";
 
 import type { ReactElement } from "react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Calendar } from "~/components/ui/calendar";
+import Modal from "~/app/_components/modal";
 import { reservations } from "./ressources";
 
 import {
@@ -17,7 +18,40 @@ import type { Center } from "~/app/models/center";
 import type { Service } from "~/app/models/service";
 import type { Reservation } from "~/app/models/reservation";
 import { Status } from "~/app/models/reservation";
+const ModalService = (props: {
+  isOpen: boolean;
+  service: Service;
+}): ReactElement => {
+  const [open, setOpen] = useState<boolean>(false);
+  const [service, setService] = useState<Service>({} as Service);
+  useEffect(() => {
+    setOpen(props.isOpen);
+    setService(props.service);
+  }, [props.isOpen, props.service]);
 
+  useEffect(() => {
+    if (open) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [open]);
+
+  const modalRef = useRef(null);
+
+  const handleClickOutside = (event: MouseEvent) => {
+    //const node = modalRef?.current as ChildNode | null;
+    if (
+      modalRef.current &&
+      !modalRef?.current?.contains(event.target ?? null)
+    ) {
+      setOpen(false);
+    }
+  };
+  return <Modal isOpen={open} service={service} />;
+};
 const ServiceTimeLine = (props: {
   service: Service;
   reservations: Reservation[];
@@ -25,12 +59,14 @@ const ServiceTimeLine = (props: {
   min: [number, number];
 }): ReactElement => {
   const { service, reservations, ticks, min } = props;
+  const [isOpen, setIsOpen] = useState<boolean>(false);
 
   return (
     <div className="flex shrink-0 items-center  border-b px-4 py-1">
       <div className="flex w-[200px] shrink-0 justify-start whitespace-nowrap">
         {service?.marketing_name}
       </div>
+      <ModalService isOpen={isOpen} service={service} />
       {Array.from({ length: ticks }).map((_, idx) => (
         <div key={idx} className="flex w-[50px] -translate-y-3 px-2">
           {/* <div className={`${idx % 4 === 0 ? "" : ""}`}>
@@ -49,6 +85,7 @@ const ServiceTimeLine = (props: {
                 const endTime = `${resa.end_time}`;
                 const start = convertStrTimeToMinutes(startTime);
                 const end = convertStrTimeToMinutes(endTime);
+                console.log(getTicksfromMinutes(end - start));
                 const startTick = getTickIndexFromMinutes(
                   convertStrTimeToMinutes(min[0] + ":" + min[1]),
                   start,
@@ -57,13 +94,17 @@ const ServiceTimeLine = (props: {
                   convertStrTimeToMinutes(min[0] + ":" + min[1]),
                   end,
                 );
-                console.log(startTick);
-                console.log(endTick);
+                // console.log(startTick);
+                // console.log(endTick);
                 if (idx >= startTick && idx < endTick) {
                   return (
                     <span
                       key={index}
-                      className={`h-[50px] w-[50px] place-content-center justify-self-center text-black ${resa.status === Status.Confirmed ? "bg-lime-400" : "bg-red-400"}`}
+                      className={`h-[50px] w-[50px] place-content-center justify-self-center text-black ${resa.status === Status.Confirmed ? "bg-lime-400" : resa.status === Status.Reserved ? "bg-yellow-500" : "bg-red-400"}`}
+                      onClick={() => {
+                        setIsOpen(false);
+                        setIsOpen(!isOpen);
+                      }}
                     >
                       {""}
                     </span>
@@ -83,7 +124,9 @@ const TimeLineHeader = (props: {
   const { ticks } = props;
   return (
     <div className="">
-      <h1>timeline</h1>
+      <div className="flex w-full items-center justify-center">
+        <h1 className="font-2xl py-5 text-xl">timeline</h1>
+      </div>
 
       <div className="flex shrink-0 items-center border-b border-t px-4 py-1">
         <div className="flex w-[200px] shrink-0 justify-start whitespace-nowrap ">
@@ -124,14 +167,14 @@ const TimeLine = ({ center }: { center: Center }): ReactElement => {
     setMinMax([min ?? 0, max ?? 24]);
 
     const resasToday = reservations.filter((resa) => {
-      console.log(resa.date);
+      // console.log(resa.date);
       return (
         resa.date.trim() == convertUtcToDateFormatStr(date ?? new Date()).trim()
       );
     });
     setResas(resasToday);
-    console.log(convertUtcToDateFormatStr(date ?? new Date()));
-    console.log(resas);
+    // console.log(convertUtcToDateFormatStr(date ?? new Date()));
+    // console.log(resas);
   }, [center, date]);
 
   return (
